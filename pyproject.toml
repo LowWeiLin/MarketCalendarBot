@@ -1,0 +1,24 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "market-calendar-bot"
+version = "1.0.0"
+description = "Telegram bot that sends scheduled market calendar alerts for exchange opening times."
+requires-python = ">=3.11"
+license = { text = "ISC" }
+dependencies = [
+    "pandas-market-calendars>=4.4.0",
+    "python-dotenv>=1.0.0",
+    "pytz>=2024.1",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=7.0", "pytest-asyncio>=0.21.0", "ruff>=0.4.0"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["main.py"]
+
+[tool.uv]
+required-version = ">=0.1.24"
