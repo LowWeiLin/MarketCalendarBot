@@ -124,6 +124,7 @@ def fetch_next_session(exchange: str) -> dict | None:
 async def send_telegram_message(message: str) -> bool:
     """Send a message via Telegram."""
     import urllib.request
+    import urllib.error
     import json
 
     telegram_token = os.getenv("TELEGRAM_TOKEN")
@@ -141,6 +142,7 @@ async def send_telegram_message(message: str) -> bool:
             {
                 "chat_id": telegram_chat_id,
                 "text": message,
+                "parse_mode": "HTML",
             }
         ).encode("utf-8")
 
@@ -156,6 +158,10 @@ async def send_telegram_message(message: str) -> bool:
                 print(f"Telegram error: {response_data.get('description')}")
                 return False
             return True
+    except urllib.error.HTTPError as e:
+        body = e.read().decode("utf-8")
+        print(f"Failed to send Telegram message: {e} - {body}")
+        return False
     except Exception as e:
         print(f"Failed to send Telegram message: {e}")
         return False
@@ -197,7 +203,7 @@ async def main():
 
     # Build message
     message_lines = [
-        f"📅 Market Calendar - Next Session Times ({DISPLAY_TIMEZONE_NAME}):",
+        f"📅 Market Calendar - Next Session ({DISPLAY_TIMEZONE_NAME}):",
         "",
     ]
     exchange_width = max(len(result["exchange"]) for result in results)
@@ -207,7 +213,7 @@ async def main():
         close_time = _format_datetime(result["next_close"])
         hours_open = _format_open_hours(result["next_open"], result["next_close"])
 
-        line = f"{result['exchange']:>{exchange_width}}: Open {open_time} ➡️ Close {close_time}"
+        line = f"<code>{result['exchange']:>{exchange_width}}</code>: {open_time} ➡️ {close_time}"
 
         line += f" ({hours_open})"
         message_lines.append(line)
